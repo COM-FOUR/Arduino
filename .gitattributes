@@ -1,4 +1,5 @@
 # Auto detect text files and perform LF normalization
+* 
 text=auto
 *.ino linguist-language=Arduino
 *.cpp linguist-language=Arduino
