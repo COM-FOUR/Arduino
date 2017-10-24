@@ -1,4 +1,8 @@
 #include "FastLED.h"
+#include <boarddefs.h>
+#include <IRremote.h>
+#include <IRremoteInt.h>
+#include <ir_Lego_PF_BitStreamEncoder.h>
 
 // How many leds in your strip?
 #define NUM_LEDS 50
@@ -8,38 +12,26 @@
 // ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
 #define DATA_PIN 18
 #define CLOCK_PIN 15
+#define RECV_PIN 11
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 CRGB CurrentColor;
 
-int buttonPin1 = 9;
-int buttonPin2 = 8;
-int buttonPin3 = 7;
-int buttonPin4 = 6;
-int buttonPin5 = 5;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
 
 int mode = 1;
 
 void setup() { 
+    irrecv.enableIRIn(); // Start the receiver
+      
     // Uncomment/edit one of the following lines for your leds arrangement.
     FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RBG>(leds, NUM_LEDS);
-
-  pinMode(buttonPin1,INPUT);
-  pinMode(buttonPin2,INPUT);
-  pinMode(buttonPin3,INPUT);
-  pinMode(buttonPin4,INPUT);
-  pinMode(buttonPin5,INPUT);
-  
-  digitalWrite(buttonPin1,HIGH);
-  digitalWrite(buttonPin2,HIGH);
-  digitalWrite(buttonPin3,HIGH);
-  digitalWrite(buttonPin4,HIGH);
-  digitalWrite(buttonPin5,HIGH);
 }
 
 void loop() { 
-  int newmode = checkButtonPressed();
+  int newmode = checkIR();
 
   if (newmode>0){
     mode=newmode;
@@ -51,28 +43,20 @@ void loop() {
   }
 }
 
-int checkButtonPressed(){
+int checkIR(){
   int result = 0;
 
-  for (int i=1; i <= 5; i++){
-    switch(i){
-      case 1 : if (checkButtonPressed2(buttonPin1)) result = i; break;
-      case 2 : if (checkButtonPressed2(buttonPin2)) result = i; break;
-      case 3 : if (checkButtonPressed2(buttonPin3)) result = i; break;
-      case 4 : if (checkButtonPressed2(buttonPin4)) result = i; break;
-      case 5 : if (checkButtonPressed2(buttonPin5)) result = i; break;
-    }
-  } 
-  
-  return result;
-}
-bool checkButtonPressed2(int pin){
-  int result = false;
-
-  if (digitalRead(pin)==LOW){
-    result = true;
-    digitalWrite(pin,HIGH);
+  if (irrecv.decode(&results)) {
+      
+      switch (results.value){
+        case 1 : result = 1; break;
+        case 2 : result = 2; break;
+        case 3 : result = 3; break;
+      }
+      
+      irrecv.resume(); // Receive the next value
   }
+  
   return result;
 }
 
